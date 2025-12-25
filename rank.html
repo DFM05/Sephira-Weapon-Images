@@ -1,9 +1,14 @@
-既然你的投票系统已经开始运行，我们现在需要一个**“排行榜页面”**，让大家能看到哪把武器是全服公认的“最强”。
+看到排行榜上的文字说明和数据显示不全，这通常是因为网页还没能从数据库成功取回数据，导致它只显示了静态的表头。
 
-我们可以新建一个文件叫 rank.html，同样放在你的 GitHub 仓库里。
+至于你提到的“上面那个文本”，那是之前的引导语不小心被你一起贴进代码里了。我们来一次性解决这两个问题。
 
-第一步：在本地新建 rank.html
-在你的 index.html 所在的文件夹里，新建一个文本文档，改名为 rank.html，然后粘贴以下代码：
+🛠️ 解决方案
+清理“引导文本”：打开你的 rank.html，删掉第一行那些“既然你的投票系统已经开始运行...”之类的文字。
+
+修复数据加载：排行榜显示为空，是因为 rank.html 里的 SUPABASE_KEY 可能还是旧的或者不对。它必须和你 index.html 里那个能让数字变动的长 Key 完全一致。
+
+🚀 修正版 rank.html 代码
+请直接用这段干净的代码覆盖你 VS Code 里的 rank.html：
 
 HTML
 
@@ -11,89 +16,78 @@ HTML
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赛菲莉娅武器 - 实时强度榜单</title>
+    <title>赛菲莉娅武器强度榜</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; }
-        .rank-table { width: 100%; max-width: 800px; margin: 20px auto; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
+        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
+        table { margin: 20px auto; border-collapse: collapse; width: 90%; max-width: 900px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 15px; border-bottom: 1px solid #334155; }
         th { background: #334155; color: #fbbf24; }
         tr:hover { background: #2d3748; }
-        .weapon-img { width: 50px; height: 50px; object-fit: contain; background: #000; border-radius: 5px; vertical-align: middle; margin-right: 10px; }
-        .win-rate { font-weight: bold; color: #fbbf24; }
-        .medals { font-size: 1.2rem; }
+        .win-rate { font-weight: bold; color: #4ade80; }
+        .back-btn { background: #fbbf24; color: #0f172a; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center;">🏆 赛菲莉娅：武器强度排行榜</h1>
-    <p style="text-align:center; color: #94a3b8;">基于全服玩家真实对战投票数据（按胜率排名）</p>
-
-    <table class="rank-table">
+    <h1>🏆 赛菲莉娅：武器强度排行榜</h1>
+    <p style="color: #94a3b8;">基于全服玩家真实对战投票数据 (按胜率排名)</p>
+    <a href="index.html" class="back-btn">⬅ 回到投票页</a>
+    
+    <table id="rankTable">
         <thead>
             <tr>
                 <th>排名</th>
-                <th>武器</th>
+                <th>武器名称</th>
                 <th>胜场 / 展示</th>
                 <th>胜率</th>
             </tr>
         </thead>
-        <tbody id="rank-list">
-            </tbody>
+        <tbody id="rankBody">
+            <tr><td colspan="4">正在读取全服数据，请稍候...</td></tr>
+        </tbody>
     </table>
 
-    <script>
-        // ======= 你的配置信息 (与投票页一致) =======
-        const SUPABASE_URL = "https://qdrqekpzaexmkyckhjlw.supabase.co"; 
-        const SUPABASE_KEY = "sb_publishable_YivlajEIEQghleyC0hxBYQ_X7AihGf_M4yK03m_Wz-fW-E5T2v-0"; 
-        const githubUser = "DFM05";
-        const repoName = "Sephira-Weapon-Images";
-        // ========================================
+<script>
+    // ======= 核心配置 (必须与 index.html 一致) =======
+    const SUPABASE_URL = "https://qdrqekpzaexmkyckhjlw.supabase.co"; 
+    const SUPABASE_KEY = "sb_publishable_T_1y4nw8BxsQjxo2ZNWeCg_oM1W_wLD"; 
+    // ==============================================
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const weaponNames = ["希望的影子","无光之刃","爬行绝望","炙热之刃","笼罩的阴云","福寿草","白色微笑","绝对向往","艰难实验","燃烧之牙","雷电之怒","无尽沉浸","黑幕","默杀","短暂自责","荆棘棒","吱嘎的脊椎","万年寒霜巨剑","深红漩涡","电击大剑【E3G】","幻术师的遗产","爱的眼神","顽皮的恶作剧","冰柱剑","裁判官","电击大剑【S3G】","太初形态","驱魔的重剑","拉扎里恩","红蛇碎击","索利斯灰烬","星光闪烁","灰烬飘扬","收紧的恐惧","胡萝卜剑","闪光的细剑","火焰凝视","冰川之刃","弩炮剑","冰冷愤怒","无垠原野","葱根剑","冰之呼吸","暴风雪的前奏","超导体","雷电之翼的振动","重型弩：加速核心","重型弩：火药合成","重型弩：连发装置","重型弩：配备制导模块","重型弩：标记稳定化","重型弩：速冻结晶","弩：双子","重型弩：爆炸装置","迷你加农炮","重型弩：聚云者","重型弩：扩展装置","卡里姆的形象","名刀【村正】","怪刀【毫羽】","炽焰赫尔巴努斯","海蒂","剑斩刀：飞柳","斩剑刀：破舞","优衣的短匕首","亚达玛的誓约","图书馆幽灵封印研究会第2型","永霜的沉默","纳斯特朗的碎片","电光一刻"];
 
-        async function loadRank() {
-            // 从数据库抓取所有武器数据
-            const { data, error } = await supabaseClient
-                .from('weapons')
-                .select('*');
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            if (error) {
-                console.error(error);
-                return;
-            }
+    async function loadRank() {
+        // 从数据库获取所有武器数据
+        const { data, error } = await supabaseClient.from('weapons').select('*');
 
-            // 计算胜率并排序 (胜率 = 胜场 / 展示次数)
-            const sortedData = data.map(w => {
-                const rate = w.total_views > 0 ? (w.votes_won / w.total_views * 100).toFixed(1) : 0;
-                return { ...w, rate: parseFloat(rate) };
-            }).sort((a, b) => b.rate - a.rate);
-
-            const listBody = document.getElementById('rank-list');
-            listBody.innerHTML = '';
-
-            sortedData.forEach((w, index) => {
-                let medal = index + 1;
-                if(index === 0) medal = "🥇";
-                else if(index === 1) medal = "🥈";
-                else if(index === 2) medal = "🥉";
-
-                const row = `
-                    <tr>
-                        <td><span class="medals">${medal}</span></td>
-                        <td>
-                            <img class="weapon-img" src="https://raw.githubusercontent.com/${githubUser}/${repoName}/main/${w.id}.png">
-                            ${w.name}
-                        </td>
-                        <td>${w.votes_won} / ${w.total_views}</td>
-                        <td class="win-rate">${w.rate}%</td>
-                    </tr>
-                `;
-                listBody.innerHTML += row;
-            });
+        if (error) {
+            document.getElementById('rankBody').innerHTML = `<tr><td colspan="4">加载失败: ${error.message}</td></tr>`;
+            return;
         }
 
-        loadRank();
-    </script>
+        // 计算胜率并排序
+        const sortedData = data.map(w => {
+            const rate = w.total_views > 0 ? ((w.votes_won / w.total_views) * 100).toFixed(1) : "0.0";
+            return { ...w, rate: parseFloat(rate) };
+        }).sort((a, b) => b.rate - a.rate);
+
+        let html = "";
+        sortedData.forEach((w, index) => {
+            const realName = weaponNames[w.id - 1] || w.name;
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${realName}</td>
+                    <td>${w.votes_won} / ${w.total_views}</td>
+                    <td class="win-rate">${w.rate}%</td>
+                </tr>
+            `;
+        });
+        document.getElementById('rankBody').innerHTML = html;
+    }
+
+    loadRank();
+</script>
 </body>
 </html>
