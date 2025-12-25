@@ -14,19 +14,11 @@
         img { width: 100%; height: 200px; object-fit: contain; background: #000; border-radius: 10px; }
         .vs { font-size: 2rem; font-weight: bold; color: #ef4444; align-self: center; }
         #progress { color: #94a3b8; margin-bottom: 20px; }
-        /* 新增按钮样式 */
+        /* 按钮样式 */
         .rank-btn { 
-            background: #fbbf24; 
-            color: #0f172a; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-            transition: 0.2s;
+            background: #fbbf24; color: #0f172a; border: none; padding: 10px 20px; 
+            border-radius: 5px; font-weight: bold; cursor: pointer; text-decoration: none;
+            display: inline-block; margin-top: 10px; transition: 0.2s;
         }
         .rank-btn:hover { background: #f59e0b; transform: scale(1.05); }
     </style>
@@ -51,13 +43,13 @@
     </div>
 
 <script>
-    // ======= 1. 配置信息 =======
+    // ======= 1. 配置信息 (已根据你的截图填入) =======
     const SUPABASE_URL = "https://qdrqekpzaexmkyckhjlw.supabase.co"; 
     const SUPABASE_KEY = "sb_publishable_YivlajEIEQghleyC0hxBYQ_X7AihGf_M4yK03m_Wz-fW-E5T2v-0"; 
     
     const githubUser = "DFM05";
     const repoName = "Sephira-Weapon-Images";
-    // ==========================
+    // ==============================================
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
@@ -68,12 +60,10 @@
     async function refresh() {
         if (count > 50) {
             alert("感谢参与！50轮投票已完成。");
-            window.location.href = 'rank.html'; // 50轮投完自动跳到排行榜
+            window.location.href = 'rank.html'; 
             return;
         }
-        
         document.getElementById('progress').innerText = `进度: ${count} / 50`;
-        
         id1 = Math.floor(Math.random() * 70) + 1;
         do { id2 = Math.floor(Math.random() * 70) + 1; } while(id1 === id2);
 
@@ -89,15 +79,12 @@
         const winnerId = (choice === 1) ? id1 : id2;
         document.getElementById('card1').classList.add('loading');
         document.getElementById('card2').classList.add('loading');
-
         await supabaseClient.rpc('increment_votes', { winner_id: winnerId });
-
         count++;
         document.getElementById('card1').classList.remove('loading');
         document.getElementById('card2').classList.remove('loading');
         refresh();
     }
-
     refresh();
 </script>
 </body>
